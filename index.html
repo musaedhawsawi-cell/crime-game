@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>القضية 27: آخر دقيقة</title>
+<style>
+:root{--bg:#0d1014;--panel:#171c22;--panel2:#202730;--text:#ece8df;--muted:#9da5ad;--accent:#c89b5b;--red:#b84c4c;--green:#6ea56e}
+*{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at top,#1b222b,#0b0d10 65%);color:var(--text);font-family:Tahoma,Arial,sans-serif;min-height:100vh}
+#app{max-width:980px;margin:auto;padding:22px}.screen{display:none}.screen.active{display:block}
+.card{background:rgba(23,28,34,.96);border:1px solid #303943;border-radius:16px;padding:24px;box-shadow:0 15px 50px #0008;margin:15px 0}
+h1,h2{margin-top:0} h1{font-size:38px;color:var(--accent)} h2{color:#e8c98e}.subtitle{color:var(--muted);line-height:1.9}
+button{background:var(--accent);color:#15120d;border:0;padding:12px 18px;border-radius:10px;font-weight:bold;cursor:pointer;margin:5px}button:hover{filter:brightness(1.08)}
+button.secondary{background:#303943;color:var(--text)} button.danger{background:var(--red);color:white}
+.top{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.badge{padding:7px 11px;border-radius:20px;background:#2a313a;color:#d8c08e;font-size:13px}
+.tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:15px}.tabs button{background:#252c34;color:#ddd}.tabs button.sel{background:var(--accent);color:#111}
+.item{background:#1e252d;border:1px solid #303943;border-radius:12px;padding:15px;margin:10px 0;cursor:pointer}.item:hover{border-color:#8b7048}.item.locked{opacity:.45;cursor:not-allowed}
+.small{font-size:13px;color:var(--muted)}.evidence{border-right:3px solid var(--accent);padding:10px 14px;background:#151a20;margin:9px 0;border-radius:7px;line-height:1.8}
+input,textarea,select{width:100%;background:#0f1318;color:#eee;border:1px solid #3b4550;border-radius:9px;padding:12px;margin:7px 0;font:inherit}
+.choice{display:block;width:100%;text-align:right;background:#242c35;color:#eee;margin:9px 0}.choice.correct{background:#285a38}.choice.wrong{background:#642f34}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.timeline{position:relative}.event{padding:12px 15px;border-right:3px solid #69737e;margin:10px 0;background:#161c22;border-radius:8px}.event b{color:#d8bd89}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#262d35;padding:12px 18px;border-radius:10px;display:none;z-index:5}
+.progress{height:8px;background:#252c34;border-radius:5px;overflow:hidden}.bar{height:100%;background:var(--accent);width:0}
+.quote{font-size:18px;line-height:2;color:#d7d1c5}
+</style>
+</head>
+<body>
+<div id="app">
+<section id="intro" class="screen active">
+<div class="card">
+<div class="badge">لعبة تحقيق تفاعلية • قضية واحدة • 60–90 دقيقة</div>
+<h1>القضية 27: آخر دقيقة</h1>
+<p class="subtitle">الساعة 23:17. عُثر على الروائي والمخرج المسرحي <b>نادر السالم</b> ميتًا في مكتبه داخل مسرح مهجور. الباب كان مقفلاً من الداخل، والمدينة تستعد لهدم المبنى صباح الغد.</p>
+<p class="quote">"في هذه القضية، ليس السؤال: من كان يكره نادر؟<br>السؤال: من احتاج أن يصدق الجميع قصةً معينة؟"</p>
+<p class="subtitle">أنت المحقق. ستجمع الأدلة، تستجوب المشتبه بهم، تفك الشيفرة، وتبني خطًا زمنيًا. بعض الأدلة مضللة، وبعض المعلومات لا تظهر إلا إذا ربطت شيئين معًا.</p>
+<button onclick="startGame()">ابدأ التحقيق</button>
+</div></section>
+
+<section id="game" class="screen">
+<div class="top"><div><h2>القضية 27: آخر دقيقة</h2><div class="progress"><div id="bar" class="bar"></div></div></div><div class="badge" id="score">ثقة التحقيق: 0%</div></div>
+<div class="tabs">
+<button onclick="tab('board')" id="tb-board" class="sel">لوحة القضية</button>
+<button onclick="tab('people')" id="tb-people">المشتبه بهم</button>
+<button onclick="tab('evidence')" id="tb-evidence">الأدلة</button>
+<button onclick="tab('timeline')" id="tb-timeline">الخط الزمني</button>
+<button onclick="tab('lab')" id="tb-lab">المختبر</button>
+<button onclick="tab('accuse')" id="tb-accuse">الاستنتاج</button>
+</div>
+
+<div id="board" class="panel">
+<div class="card"><h2>ملخص البلاغ</h2><p>المجني عليه: <b>نادر السالم، 42 عامًا</b><br>المكان: مكتب الإدارة، الطابق الثاني، مسرح السرو القديم.<br>وقت العثور عليه: 23:17.<br>سبب الوفاة المبدئي: ضربة قوية خلف الرأس. أداة الجريمة غير موجودة.</p></div>
+<div class="card"><h2>مهمتك</h2><div class="grid">
+<div class="item">1. افحص الأدلة المتاحة.</div><div class="item">2. اسأل المشتبه بهم.</div><div class="item">3. حل الشفرة في دفتر نادر.</div><div class="item">4. حدد الثغرات في أقوالهم.</div><div class="item">5. كوّن خطًا زمنيًا دقيقًا.</div><div class="item">6. اختر القاتل + الدافع + طريقة التنفيذ.</div>
+</div></div>
+<div class="card"><h2>ملاحظة المحقق</h2><p class="subtitle">لا تتعجل الاتهام. اللعبة تتعمد إعطاء كل شخص سببًا يبدو مقنعًا في البداية.</p></div>
+</div>
+
+<div id="people" class="panel" style="display:none"></div>
+<div id="evidence" class="panel" style="display:none"></div>
+<div id="timeline" class="panel" style="display:none"></div>
+<div id="lab" class="panel" style="display:none"></div>
+<div id="accuse" class="panel" style="display:none"></div>
+</section>
+</div>
+<div id="toast"></div>
+
+<script>
+const S={
+started:false, discovered:new Set(), interrogated:new Set(), solved:false, confidence:0,
+people:[
+{id:'layan',name:'ليان مراد',role:'ممثلة المسرح وشريكة نادر السابقة',secret:'كانت تملك نسخة من مفتاح المكتب، وتقول إنها سلمتها لنادر قبل أسبوع.',clue:'تذكر أنها غادرت المبنى 22:31، لكنها أخطأت في وصف صوت الإنذار الذي سمعته.'},
+{id:'sami',name:'سامي القحطاني',role:'مدير المسرح',secret:'عليه ديون كبيرة، وكان نادر ينوي طرده واستبداله.',clue:'يقول إن نظام الكاميرات تعطل 22:40، لكن سجل النظام لا يطابق كلامه.'},
+{id:'noor',name:'نور السالم',role:'أخت نادر ومصممة الديكور',secret:'كانت آخر شخص تحدث معه هاتفيًا، وكانت بينهما مشكلة حول ملكية نص قديم.',clue:'تقول إن المكالمة انتهت 22:18، لكن فاتورة الهاتف تشير إلى 22:26.'},
+{id:'fahd',name:'فهد الكيلاني',role:'صحفي وصديق قديم',secret:'كان يبحث عن ملف سري لدى نادر يخص قضية مسرحية قديمة.',clue:'ينكر دخول المكتب، رغم وجود أثر لوجوده في الطابق الثاني.'}
+],
+evidence:[
+{id:'scene',title:'مسرح الجريمة',text:'نادر جالس قرب المكتب. جرح واحد خلف الرأس. كوب قهوة بارد، نافذة نصف مفتوحة، ورقة ممزقة قرب سلة المهملات. لا توجد أداة واضحة.'},
+{id:'door',title:'الباب المقفل',text:'المفتاح الموجود في القفل من الداخل. لا توجد علامات كسر. لكن مزلاج الباب يمكن إغلاقه من الخارج باستخدام خيط رفيع إذا كان الباب في وضع معين.'},
+{id:'coffee',title:'كوب القهوة',text:'بقايا قهوة مع أثر دواء منوم بكمية صغيرة. الجرعة ليست قاتلة، لكنها قد تسبب بطئًا ودوخة.'},
+{id:'camera',title:'سجل الكاميرات',text:'الكاميرا الرئيسية توقفت 22:41:12 ثم عادت 22:58:03. كاميرا الممر الجانبي ظلت تعمل، لكنها لا تصور باب المكتب مباشرة.'},
+{id:'paper',title:'الورقة الممزقة',text:'يمكن قراءة: «إذا حدث لي شيء، لا تثق بمن يروي لك القصة كاملة. ابحث عن الدقيقة الناقصة.» وفي الأسفل أرقام: 22-41-12 / 22-58-03 / 17.'},
+{id:'key',title:'مفتاح احتياطي',text:'في غرفة الملابس مفتاح احتياطي للمكتب. عليه غبار جديد على الحلقة المعدنية، لكن جسم المفتاح نفسه نظيف.'},
+{id:'clock',title:'ساعة المكتب',text:'ساعة حائط متوقفة عند 22:47. البطارية سليمة، لكن خلفها خدش حديث في الغطاء.'},
+{id:'thread',title:'خيط أسود',text:'وُجدت شعيرة/خيط صناعي أسود دقيق عالقًا في حافة المزلاج. نوعه يشبه خيوط ستارة المسرح الثقيلة.'},
+{id:'note',title:'دفتر نادر المشفر',text:'الصفحة الأخيرة: «الثلاثة لا تكذب، لكن واحدًا منهم يكذب في الزمن. 17 ← 41 ← 58». وتحتها: «المشهد الذي لم يُعرض هو المفتاح». '}
+],
+questions:{
+layan:[
+['أين كنتِ بين 22:35 و23:00؟','غادرت. اشتريت ماء من البقالة المقابلة ثم مشيت للموقف.'],
+['لماذا لديك نسخة من المفتاح؟','لأنني كنت أعمل هنا لسنوات. نادر لم يطلبها مني حتى بعد انفصالنا.'],
+['ماذا سمعتِ قبل خروجك؟','سمعت صوتًا يشبه سقوط قطعة معدنية قرب المكتب. بعدها بدقائق سمعت نظام الإنذار.']
+],
+sami:[
+['متى تعطلت الكاميرات؟','حوالي 22:40. حصلت مشكلة في جهاز التسجيل.'],
+['هل دخلت المكتب بعد 22:30؟','لا. كنت في غرفة التحكم.'],
+['هل تعرف طريقة إغلاق المزلاج من الخارج؟','نعم، بحكم عملي هنا، لكن لم أستخدمها منذ سنوات.']
+],
+noor:[
+['متى انتهت مكالمتك مع نادر؟','22:18 تقريبًا. كانت قصيرة.'],
+['لماذا تقول الفاتورة 22:26؟','ربما كنت مخطئة. كنت متوترة.'],
+['هل كان نادر يخاف من أحد؟','كان يقول إن شخصًا يحاول سرقة نهاية مسرحية قديمة. لم يخبرني من.']
+],
+fahd:[
+['لماذا كنت في الطابق الثاني؟','كنت أبحث عن نادر. ثم غادرت عندما لم أجده.'],
+['هل دخلت مكتبه؟','لا. أقسم ذلك.'],
+['ما الذي كنت تبحث عنه؟','ملفًا قديمًا. لا علاقة له بموته.']
+]
+}
+};
+
+function startGame(){S.started=true;document.getElementById('intro').classList.remove('active');document.getElementById('game').classList.add('active');renderAll();}
+function tab(id){document.querySelectorAll('.panel').forEach(x=>x.style.display='none');document.getElementById(id).style.display='block';document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('sel'));document.getElementById('tb-'+id).classList.add('sel');renderAll();}
+function toast(t){let x=document.getElementById('toast');x.textContent=t;x.style.display='block';setTimeout(()=>x.style.display='none',2300)}
+function discover(id){S.discovered.add(id);recalc();renderAll();toast('تمت إضافة المعلومة إلى ملف القضية.');}
+function interrogate(id){S.interrogated.add(id);recalc();renderAll();toast('تم تسجيل إفادة المشتبه به.');}
+function recalc(){let n=S.discovered.size*4+S.interrogated.size*5+(S.solved?35:0);S.confidence=Math.min(100,n);document.getElementById('score').textContent='ثقة التحقيق: '+S.confidence+'%';document.getElementById('bar').style.width=S.confidence+'%';}
+function renderAll(){renderPeople();renderEvidence();renderTimeline();renderLab();renderAccuse();recalc();}
+function renderPeople(){
+let h='<div class="card"><h2>المشتبه بهم</h2><p class="subtitle">لا يوجد شخص بريء تمامًا من الأسرار. هذا لا يعني أن الجميع قاتل.</p>';
+S.people.forEach(p=>{let done=S.interrogated.has(p.id);h+=`<div class="item"><h3>${p.name}</h3><div class="small">${p.role}</div><p>${done?p.secret+'<br><br><b>تفصيل مهم:</b> '+p.clue:'اضغط لاستجواب المشتبه به وفتح إفادته.'}</p><button onclick="interrogate('${p.id}')">${done?'إعادة قراءة الإفادة':'استجواب'}</button></div>`});
+document.getElementById('people').innerHTML=h+'</div>';
+}
+function renderEvidence(){
+let h='<div class="card"><h2>غرفة الأدلة</h2><p class="subtitle">بعض الأدلة تعطيك معلومة، وبعضها يصبح مهمًا فقط عند مقارنته بإفادة.</p>';
+S.evidence.forEach(e=>{let open=S.discovered.has(e.id);h+=`<div class="item ${open?'':'locked'}" onclick="${open?'':'discover(\\''+e.id+'\\')'}"><h3>${e.title}</h3><p>${open?e.text:'اضغط لفحص الدليل'}</p></div>`});
+document.getElementById('evidence').innerHTML=h+'</div>';
+}
+function renderTimeline(){
+let h='<div class="card"><h2>الخط الزمني</h2><p class="subtitle">رتّب الأحداث ذهنيًا. بعض الأوقات ليست وقت وقوع الجريمة، بل وقت حدثٍ آخر.</p><div class="timeline">';
+[['22:18','نهاية المكالمة المزعومة مع نور'],['22:31','وقت مغادرة ليان المزعوم'],['22:41:12','انقطاع الكاميرا الرئيسية'],['22:47','ساعة المكتب المتوقفة'],['22:58:03','عودة الكاميرا'],['23:17','العثور على الجثة']].forEach(x=>h+=`<div class="event"><b>${x[0]}</b> — ${x[1]}</div>`);
+h+='</div><div class="evidence"><b>سؤال:</b> ما الحدث الذي يمكن أن يجعل 22:47 ليس وقت الوفاة؟ فكّر في سبب توقف الساعة، لا في عقاربها فقط.</div></div>';
+document.getElementById('timeline').innerHTML=h;
+}
+function renderLab(){
+document.getElementById('lab').innerHTML=`<div class="card"><h2>المختبر — دفتر نادر</h2>
+<p>نادر ترك ثلاثة أرقام: <b>17 ← 41 ← 58</b>، وكتب: «المشهد الذي لم يُعرض هو المفتاح».</p>
+<p class="small">تلميح: لا تتعامل مع الأرقام كرمز واحد. اربطها بأحداث القضية، ثم اسأل: أي "مشهد" لم تره الكاميرا؟</p>
+<input id="code" placeholder="اكتب كلمة/عبارة المفتاح هنا">
+<button onclick="solveCode()">تحقق</button>
+<div id="labresult"></div></div>
+<div class="card"><h2>اختبار المنطق</h2>
+<p>أي استنتاج أقوى بناءً على الأدلة الحالية؟</p>
+<button class="choice" onclick="logic(1)">أ) الباب مقفل، إذن القاتل كان داخل المكتب.</button>
+<button class="choice" onclick="logic(2)">ب) انقطاع الكاميرا وحده يثبت أن سامي هو القاتل.</button>
+<button class="choice" onclick="logic(3)">ج) الخيط + معرفة آلية المزلاج + الفجوة الزمنية قد تفسر مشهد الباب المقفل دون وجود القاتل داخله.</button>
+<div id="logicresult"></div></div>`;
+}
+function solveCode(){
+let v=document.getElementById('code').value.trim().toLowerCase();
+let ok=v.includes('المزلاج')||v.includes('الخيط')||v.includes('المشهد');
+if(ok){S.solved=true;document.getElementById('labresult').innerHTML='<div class="evidence">✓ صحيح جزئيًا. المفتاح ليس اسم شخص، بل <b>المشهد غير المصوَّر: طريقة إغلاق المزلاج من الخارج</b>. لقد فتحت صفحة الاستنتاج.</div>';recalc();toast('تم فتح استنتاج القضية.');}
+else document.getElementById('labresult').innerHTML='<div class="evidence">ليس هذا هو المفتاح. راجع 17، 41، 58 وما الذي لم تره الكاميرا.</div>';
+}
+function logic(n){
+let r=document.getElementById('logicresult');
+if(n===3){r.innerHTML='<div class="evidence">✓ هذا الاستنتاج مدعوم بأكثر من دليل، لكنه لا يحدد القاتل وحده.</div>';S.confidence=Math.min(100,S.confidence+8);recalc();}
+else r.innerHTML='<div class="evidence">✗ هذا استنتاج متسرع. اللعبة تعطيك أدلة لتفصل بين "الإمكان" و"الإثبات".</div>';
+}
+function renderAccuse(){
+document.getElementById('accuse').innerHTML=`<div class="card"><h2>الاستنتاج النهائي</h2>
+<p class="subtitle">لن تحصل على النتيجة لمجرد اختيار اسم. يجب أن تحدد القاتل والدافع والطريقة. يمكنك تغيير إجابتك قبل التسليم.</p>
+<label>من القاتل؟</label><select id="killer"><option value="">اختر</option>${S.people.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
+<label>ما الدافع الأقرب؟</label><select id="motive"><option value="">اختر</option><option value="money">المال/الديون</option><option value="script">سرقة نهاية المسرحية والملف القديم</option><option value="revenge">الانتقام من نادر</option><option value="family">نزاع عائلي وملكية النص</option></select>
+<label>كيف صُنعت "الغرفة المغلقة"؟</label><select id="method"><option value="">اختر</option><option value="inside">القاتل بقي داخل المكتب</option><option value="thread">إغلاق المزلاج من الخارج بالخيط</option><option value="key">استخدام المفتاح الاحتياطي فقط</option></select>
+<button onclick="submitCase()">تسليم القضية</button><div id="final"></div></div>`;
+}
+function submitCase(){
+let k=document.getElementById('killer').value,m=document.getElementById('motive').value,me=document.getElementById('method').value;
+let out=document.getElementById('final');
+if(!k||!m||!me){out.innerHTML='<div class="evidence">أكمل العناصر الثلاثة قبل التسليم.</div>';return}
+let correct=(k==='sami'&&m==='money'&&me==='thread');
+if(correct){
+out.innerHTML=`<div class="evidence"><h2>حل القضية</h2>
+<b>سامي القحطاني هو القاتل.</b><br><br>
+لم يكن الدليل الحاسم أنه كان يعرف نظام الكاميرات؛ هذه قرينة فقط. الدافع هو أنه كان مهددًا بخسارة عمله وتراكم ديونه، بينما كان نادر يملك ملفًا يثبت اختلاسه من ميزانية المسرح.<br><br>
+سامي استغل فجوة الكاميرات، دسّ كمية منوم في القهوة، ثم ضرب نادر عندما أصبح بطيئًا. بعد خروجه استخدم خيطًا من ستارة المسرح لسحب المزلاج وإغلاق الباب من الخارج. لذلك بدت الغرفة مغلقة من الداخل.<br><br>
+<b>لماذا الأدلة الأخرى؟</b> المفتاح الاحتياطي والغبار كانا طُعمًا، وأقوال ليان ونور وفهد تحتوي تناقضات حقيقية لكنها لا تربطهم مباشرة بآلية الجريمة. أما 22:47 فليس وقت الوفاة بالضرورة؛ الساعة توقفت نتيجة العبث بها، وهي جزء من المسرح المصطنع الذي أراد القاتل أن تصدقه.
+</div><div class="evidence">🎉 أحسنت. أنت لم تحل "من؟" فقط؛ بل أثبتَّ "كيف؟ ولماذا؟ ومتى؟".</div>`;
+S.confidence=100;recalc();
+}else{
+out.innerHTML='<div class="evidence"><b>الاستنتاج غير مكتمل.</b> بعض عناصره تتعارض مع الأدلة. ارجع إلى إفادات المشتبه بهم وقارنها بالخيط، الكاميرات، الدافع، والساعة.</div>';
+}
+}
+renderAll();
+</script>
+</body>
+</html>
